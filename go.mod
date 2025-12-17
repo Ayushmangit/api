@@ -1,4 +1,4 @@
-module github.com/Ayushmangit/wagslane
+module github.com/Ayushmangit/api
 
 go 1.25.4
 
