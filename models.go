@@ -1,10 +1,9 @@
 package main
 
 import (
-	"time"
-
 	"github.com/Ayushmangit/api/internal/database"
 	"github.com/google/uuid"
+	"time"
 )
 
 type User struct {
@@ -13,6 +12,7 @@ type User struct {
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	ApiKey    string    `json:"api_key"`
 }
 
 func databaseUserToUser(dbUser database.User) User {
@@ -22,6 +22,7 @@ func databaseUserToUser(dbUser database.User) User {
 		Email:     dbUser.Email,
 		CreatedAt: dbUser.CreatedAt,
 		UpdatedAt: dbUser.UpdatedAt,
+		ApiKey:    dbUser.ApiKey,
 	}
 }
 

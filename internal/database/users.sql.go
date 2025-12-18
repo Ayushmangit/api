@@ -13,9 +13,10 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, name, email, created_at, updated_at)
-VALUES ($1,$2, $3, $4, $5)
-RETURNING id, name, email, created_at, updated_at
+INSERT INTO users (id, name, email, created_at, updated_at,api_key)
+VALUES ($1,$2, $3, $4, $5,encode(sha256(random()::text::bytea),'hex')
+)
+RETURNING id, name, email, created_at, updated_at,api_key
 `
 
 type CreateUserParams struct {
@@ -41,6 +42,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Email,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ApiKey,
 	)
 	return i, err
 }
@@ -56,7 +58,7 @@ func (q *Queries) DestroyUser(ctx context.Context, id uuid.UUID) (uuid.UUID, err
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id,name,email,created_at,updated_at
+SELECT id,name,email,created_at,updated_at,api_key
 FROM users
 ORDER BY created_at desc
 `
@@ -76,6 +78,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 			&i.Email,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ApiKey,
 		); err != nil {
 			return nil, err
 		}
@@ -90,6 +93,24 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const getUserByAPIKey = `-- name: GetUserByAPIKey :one
+select id,name,email,created_at,updated_at,api_key from users where api_key = $1
+`
+
+func (q *Queries) GetUserByAPIKey(ctx context.Context, apiKey string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByAPIKey, apiKey)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ApiKey,
+	)
+	return i, err
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
@@ -97,7 +118,7 @@ SET
 		email = COALESCE($3,email),
 		updated_at = NOW()
 WHERE id = $1
-returning id,name,email,created_at,updated_at
+returning id,name,email,created_at,updated_at,api_key
 `
 
 type UpdateUserParams struct {
@@ -115,6 +136,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Email,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ApiKey,
 	)
 	return i, err
 }
