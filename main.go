@@ -70,13 +70,13 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/health", HandlerReadiness)
 	v1Router.Get("/err", HandlerError)
-	v1Router.Get("/users", apiCfg.HandlerGetAllUsers)
+	v1Router.Get("/", apiCfg.HandlerGetAllUsers)
+	v1Router.Get("/users", apiCfg.HandlerGetUser)
 	v1Router.Post("/users", apiCfg.HandlerCreateUser)
 	v1Router.Delete("/users/{id}", apiCfg.HandlerDestroyUser)
 	v1Router.Put("/users/{id}", apiCfg.HandlerUpdateUser)
 
 	router.Mount("/v1", v1Router)
-
 	log.Printf("Server starting on port %v", port)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
